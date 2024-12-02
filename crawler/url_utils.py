@@ -41,3 +41,9 @@ def to_abs_url(base_url: str, path: str) -> str:
     except Exception as err:
         print(f'Error combining "{base_url}" and "{path}"')
     return ''
+
+def url_to_origin(url: str) -> str:
+    url_parse = urlparse(url)
+    scheme = url_parse.scheme
+    domain = url_parse.netloc
+    return f'{scheme}://{domain}'

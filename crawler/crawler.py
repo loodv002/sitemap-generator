@@ -13,7 +13,7 @@ from typing import Dict, Optional, List
 
 from .config import CrawlerConfig
 from .graph_manager import GraphManager
-from .url_utils import check_url_allowed, to_abs_url
+from .url_utils import *
 
 class Crawler:
     def __init__(self, 
@@ -151,14 +151,18 @@ class Crawler:
                              url: str) -> Optional[requests.Response]:
         
         time.sleep(self.__config.per_thread_request_gap)
-        referer_header = {'Referer': self.__get_referer(url)}
+        referer = self.__get_referer(url)
+        headers = {}
+        headers['Referer'] = referer
+        if url_to_origin(url) != url_to_origin(referer):
+            headers['Origin'] = url_to_origin(referer)
 
         for retry_delay in self.__EXP_DELAY:
             try:
                 return session.request(
                     http_method_name, 
                     url = url,
-                    headers = referer_header,
+                    headers = headers,
                     timeout = self.__config.timeout,
                 )
             except requests.exceptions.Timeout:
