@@ -10,10 +10,10 @@ class CrawlerConfig:
     '''Allowed domain during crawling, support port and wildcard `*`. Do not include scheme or path.'''
 
     include_urls: List[str] = field(default_factory=lambda : ['*'])
-    '''Included url patterns, support wildcard `*`. Do not include scheme or parameters.'''
+    '''Included url patterns, support wildcard `*`. Do not include scheme.'''
     
     exclude_urls: List[str] = field(default_factory=list)
-    '''Excluded url patterns, support wildcard `*`. Do not include scheme or parameters.'''
+    '''Excluded url patterns, support wildcard `*`. Do not include scheme.'''
     
     n_threads: int = 5
     '''Number of crawler worker threads.'''

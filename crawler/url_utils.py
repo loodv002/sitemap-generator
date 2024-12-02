@@ -19,17 +19,19 @@ def check_url_allowed(url: str,
     scheme = url_parse.scheme
     domain = url_parse.netloc
     path = url_parse.path
+    query = url_parse.query
+    url_no_scheme = f'{domain}{path}?{query}'
 
     domain_allowed = any(
         _check_pattern_with_wildcard(allow_domain, domain)
         for allow_domain in allow_domains
     )
     url_included = any(
-        _check_pattern_with_wildcard(include_url, domain+path)
+        _check_pattern_with_wildcard(include_url, url_no_scheme)
         for include_url in include_urls
     )
     url_excluded = any(
-        _check_pattern_with_wildcard(exclude_url, domain+path)
+        _check_pattern_with_wildcard(exclude_url, url_no_scheme)
         for exclude_url in exclude_urls
     )
     return domain_allowed and url_included and not url_excluded
