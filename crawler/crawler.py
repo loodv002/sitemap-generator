@@ -11,9 +11,9 @@ from enum import Enum, unique
 
 from typing import Dict, Optional, List
 
-from config import CrawlerConfig
-from graph_manager import GraphManager
-from url_utils import check_url_allowed, to_abs_url
+from .config import CrawlerConfig
+from .graph_manager import GraphManager
+from .url_utils import check_url_allowed, to_abs_url
 
 class Crawler:
     def __init__(self, 
@@ -193,12 +193,3 @@ class Crawler:
         response = self.__request_with_retry(session, 'HEAD', url)
         if not response or response.status_code != 200: return False
         return response.headers.get('Content-Type', '').startswith('text/html')
-    
-if __name__ == '__main__':
-    cr = Crawler(CrawlerConfig(
-        user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-        index_urls=['https://info.nycu.edu.tw/'],
-        allow_domains=['info.nycu.edu.tw'],
-        # include_urls=[],
-    ))
-    cr.main()
