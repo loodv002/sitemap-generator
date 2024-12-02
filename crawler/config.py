@@ -3,6 +3,18 @@ from typing import Union, Tuple, List
 
 @dataclass
 class CrawlerConfig:
+    index_urls: List[str]
+    '''The urls crawler start crawling. Must be given.'''
+
+    allow_domains: List[str]
+    '''Allowed domain during crawling, support port and wildcard `*`. Do not include scheme or path.'''
+
+    include_urls: List[str] = field(default_factory=lambda : ['*'])
+    '''Included url patterns, support wildcard `*`. Do not include scheme or parameters.'''
+    
+    exclude_urls: List[str] = field(default_factory=list)
+    '''Excluded url patterns, support wildcard `*`. Do not include scheme or parameters.'''
+    
     n_threads: int = 5
     '''Number of crawler worker threads.'''
 
@@ -26,15 +38,3 @@ class CrawlerConfig:
 
     per_thread_request_gap: int = 1
     '''Per thread time gap between two continuous requests.'''
-
-    index_urls: List[str] = field(default_factory=lambda : [])
-    '''The urls crawler start crawling. Must be given.'''
-
-    allow_domains: List[str] = field(default_factory=lambda : ['*'])
-    '''Allowed domain during crawling, support port and wildcard `*`. Do not include scheme or path.'''
-
-    include_urls: List[str] = field(default_factory=lambda : ['*'])
-    '''Included url patterns, support wildcard `*`. Do not include scheme or parameters.'''
-    
-    exclude_urls: List[str] = field(default_factory=list)
-    '''Excluded url patterns, support wildcard `*`. Do not include scheme or parameters.'''
