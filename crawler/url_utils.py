@@ -49,3 +49,6 @@ def url_to_origin(url: str) -> str:
     scheme = url_parse.scheme
     domain = url_parse.netloc
     return f'{scheme}://{domain}'
+
+def remove_fragment(url: str) -> str:
+    return url.split('#')[0]

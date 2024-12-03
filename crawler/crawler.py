@@ -188,7 +188,7 @@ class Crawler:
             to_abs_url(url, link)
             for link in links
         ]
-        links = [link for link in links if link]
+        links = [remove_fragment(link) for link in links if link]
         return links
     
     def __check_new_url(self, session: requests.Session, url: str) -> bool:
