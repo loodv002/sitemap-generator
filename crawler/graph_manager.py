@@ -84,6 +84,10 @@ class GraphManager:
     def get_rev_links_by_id(self, id: int) -> List[int]:
         '''Get all referer url ids of `url(id)`.'''
         return self.__rev_links_list[id]
+    
+    def get_url_count(self) -> int:
+        '''Get current number of url nodes.'''
+        return len(self.__url_to_id)
 
     
     def pipeline_get_update(self) -> PipelineUpdate:

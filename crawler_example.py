@@ -6,3 +6,8 @@ cr = Crawler(CrawlerConfig(
     allow_domains=['*info.nycu.edu.tw'], # Allow "info.nycu.edu.tw" and "*.info.nycu.edu.tw"
 ))
 cr.main()
+
+from analyzer import *
+az = Analyzer(graph_manager=cr.graph_manager, config=AnalyzerConfig())
+urlweight = az.main()
+print(urlweight)
