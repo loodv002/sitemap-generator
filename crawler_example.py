@@ -11,3 +11,8 @@ from analyzer import *
 az = Analyzer(graph_manager=cr.graph_manager, config=AnalyzerConfig())
 urlweight = az.main()
 print(urlweight)
+
+
+from generator import *
+sm = SiteMap()
+sm.main(urlweight)
