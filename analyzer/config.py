@@ -5,6 +5,9 @@ class AnalyzeAlgorithm(Enum):
     PAGERANK_PY = 'pagerank_py'
     '''PageRank algorithm in python. Serial Implementation.'''
 
+    PAGERANK_PYMAT = 'pagerank_pymat'
+    '''PageRank algorithm in python. Serial Implementation in matrix evaluation.'''
+
     PAGERANK_NP = 'pagerank_np'
     '''PageRank algorithm in numpy. Serial Implementation.'''
 
