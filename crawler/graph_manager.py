@@ -1,7 +1,7 @@
 import threading
 import pickle
 
-from typing import List, Tuple, Dict, Set, NamedTuple
+from typing import List, Tuple, Dict, Set, NamedTuple, Any
 
 class PipelineUpdate(NamedTuple):
     n_urls: int
@@ -35,6 +35,9 @@ class GraphManager:
         self.__pipeline_all_links_from: int = 0
         '''Index of `self.__all_links`, represent where next pipeline update should start from.'''
 
+        self.__is_html: Set[int] = set()
+        '''Url id of html pages.'''
+
     def __getstate__(self):
         state = self.__dict__.copy()
 
@@ -55,6 +58,8 @@ class GraphManager:
         target_ids = [self.get_id_by_url(target_url) for target_url in target_urls]
 
         with self.__lock:
+            self.__is_html.add(source_id)
+
             for target_id in target_ids:
                 if target_id in self.__links_set[source_id]: continue
 
@@ -125,3 +130,18 @@ class GraphManager:
     def load_from_file(input_file_name: str) -> 'GraphManager':
         with open(input_file_name, 'rb') as input_file:
             return pickle.load(input_file)
+        
+    def get_statistic(self) -> Dict[str, Any]:
+        with self.__lock:
+            n_html_page = len(self.__is_html)
+            n_resources = len(self.__url_to_id)
+            n_links = len(self.__all_links)
+            max_degree = max(len(link) for link in self.__links_list)
+            avg_degree = sum(len(link) for link in self.__links_list) / n_html_page
+        return {
+            'n_html_page': n_html_page,
+            'n_resources': n_resources,
+            'n_links': n_links,
+            'max_degree': max_degree,
+            'avg_degree': avg_degree,
+        }
