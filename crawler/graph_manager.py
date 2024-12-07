@@ -1,4 +1,5 @@
 import threading
+import pickle
 
 from typing import List, Tuple, Dict, Set, NamedTuple
 
@@ -33,6 +34,18 @@ class GraphManager:
 
         self.__pipeline_all_links_from: int = 0
         '''Index of `self.__all_links`, represent where next pipeline update should start from.'''
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+
+        # Exclude self.__lock to pickle
+        state.pop(f'_{self.__class__.__name__}__lock')
+
+        return state
+    
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.__lock = threading.Lock()
 
     def _add_links(self, source_url: str, target_urls: List[str]):
         '''Add hyperlinks `target_urls` found in page `source_url`. \n
@@ -89,7 +102,6 @@ class GraphManager:
         '''Get current number of url nodes.'''
         return len(self.__url_to_id)
 
-    
     def pipeline_get_update(self) -> PipelineUpdate:
         '''Get graph modification since last call. \n
         **return** NamedTuple(
@@ -104,3 +116,12 @@ class GraphManager:
                 len(self.__url_to_id),
                 self.__all_links[all_links_from:]
             )
+        
+    def save_to_file(self, output_file_name: str) -> None:
+        with open(output_file_name, 'wb') as output_file:
+            pickle.dump(self, output_file)
+
+    @staticmethod
+    def load_from_file(input_file_name: str) -> 'GraphManager':
+        with open(input_file_name, 'rb') as input_file:
+            return pickle.load(input_file)
