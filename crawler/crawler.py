@@ -9,11 +9,17 @@ from datetime import datetime
 from functools import partial
 from enum import Enum, unique
 
-from typing import Dict, Optional, List
+from typing import Dict, List, Set, Callable, Optional
 
 from .config import CrawlerConfig
 from .graph_manager import GraphManager
 from .url_utils import *
+
+class CrawlerTask:
+    def __init__(self, method: str, url: str, callback: Callable):
+        self.method = method
+        self.url = url
+        self.callback = callback
 
 class Crawler:
     def __init__(self, 
@@ -35,15 +41,20 @@ class Crawler:
         self.__EXP_DELAY = [2 ** i for i in range(self.__config.n_retries)] + [0]
     
         # Init index urls.
-        self.__url_to_crawl = queue.Queue()
+        self.__url_to_crawl: queue.Queue[CrawlerTask] = queue.Queue()
         self.__index_urls_set = set(self.__config.index_urls)
         for index_url in self.__config.index_urls:
             self.graph_manager.get_id_by_url(index_url)
-            self.__url_to_crawl.put(index_url)
+            self.__url_to_crawl.put(CrawlerTask(
+                method   = 'GET',
+                url      = index_url,
+                callback = self.__page_parse_handler
+            ))
 
         # Variables that require lock protection.
         self.__all_crawl_finish = False
         self.__current_crawling_count = 0
+        self.__url_check_created: Set[int] = set()
 
         # Init threads
         self.__threads = [
@@ -66,19 +77,22 @@ class Crawler:
     def __worker(self, worker_id: int) -> None:
         session = self.__get_session(worker_id)
         while not self.__all_crawl_finish:
-            get_new_jobs = False
+            get_new_tasks = False
             with self.__lock, contextlib.suppress(queue.Empty):
-                url = self.__url_to_crawl.get_nowait()
+                task: CrawlerTask = self.__url_to_crawl.get_nowait()
                 self.__current_crawling_count += 1
-                get_new_jobs = True
+                get_new_tasks = True
                 
-            if not get_new_jobs:
+            if not get_new_tasks:
                 time.sleep(1)
                 continue
 
-            self.__log(f'Worker {worker_id} handling "{url}" start.')
-            self.__job_handler(session, url)
-            self.__log(f'Worker {worker_id} handling "{url}" finish.')
+            self.__log(f'Worker {worker_id} handling "{task.method}-{task.url}" start, pending tasks: {self.__url_to_crawl.qsize()}.')
+    
+            response = self.__request_with_retry(session, task.method, task.url)
+            task.callback(task.url, response)
+
+            self.__log(f'Worker {worker_id} handling "{task.method}-{task.url}" finish, pending tasks: {self.__url_to_crawl.qsize()}.')
             
             with self.__lock:
                 self.__current_crawling_count -= 1
@@ -86,28 +100,49 @@ class Crawler:
                 if self.__current_crawling_count == 0 and self.__url_to_crawl.empty():
                     self.__all_crawl_finish = True
 
-    def __job_handler(self, session: requests.Session, url: str) -> bool:
-        response = self.__request_with_retry(session, 'GET', url)
+    def __page_parse_handler(self, url: str, response: Optional[requests.Response]):
         if not response: return False
         if response.status_code != 200: return False
 
         page_html = response.text
         links = self.__parse_page(url, page_html)
 
+        self.graph_manager._add_links(url, links)
+        url_ids = [self.graph_manager.get_id_by_url(link)
+                   for link in links]
+
         with self.__lock:
-            # Prevent same link in multiple threads obtain "url not exist" state.
-            links_exist = [self.graph_manager.url_exists(link)
-                        for link in links]
-
-            self.graph_manager._add_links(url, links)
+            # Prevent same link in multiple threads obtain "url not checked" state.
+            urls_to_check = [link
+                             for link, url_id in zip(links, url_ids)
+                             if url_id not in self.__url_check_created]
+            self.__url_check_created.update(url_ids)
         
-        for link, link_exist in zip(links, links_exist):
-            if not link_exist and self.__check_new_url(session, link):
-                self.__url_to_crawl.put(link)
+        for link in urls_to_check:
+            if not self.__url_filter(link): continue
 
-                self.__log(f'Add "{link}" to queue, pending urls: {self.__url_to_crawl.qsize()}.')
+            self.__url_to_crawl.put(CrawlerTask(
+                method   = 'HEAD',
+                url      = link,
+                callback = self.__url_check_handler
+            ))
+
+            self.__log(f'Add "HEAD-{link}" to queue, pending tasks: {self.__url_to_crawl.qsize()}.')
 
         return True
+
+    def __url_check_handler(self, url: str, response: Optional[requests.Response]):
+        if not response: return
+        elif response.status_code != 200: return
+        elif not response.headers.get('Content-Type', '').startswith('text/html'): return
+
+        self.__url_to_crawl.put(CrawlerTask(
+            method   = 'GET',
+            url      = url,
+            callback = self.__page_parse_handler
+        ))
+        
+        self.__log(f'Add "GET-{url}" to queue, pending tasks: {self.__url_to_crawl.qsize()}.')
 
     def __get_session(self, worker_id: int) -> requests.Session:
         if self.__config.proxies:
@@ -172,7 +207,7 @@ class Crawler:
             time.sleep(retry_delay)
 
         return None
-    
+
     def __parse_page(self, url: str, page_html: str) -> List[str]:
         links = (
             re.findall(
@@ -191,10 +226,3 @@ class Crawler:
         links = [remove_fragment(link) for link in links if link]
         links = list(set(links))
         return links
-    
-    def __check_new_url(self, session: requests.Session, url: str) -> bool:
-        if not self.__url_filter(url): return False
-
-        response = self.__request_with_retry(session, 'HEAD', url)
-        if not response or response.status_code != 200: return False
-        return response.headers.get('Content-Type', '').startswith('text/html')
