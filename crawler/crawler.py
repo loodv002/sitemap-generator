@@ -189,6 +189,7 @@ class Crawler:
             for link in links
         ]
         links = [remove_fragment(link) for link in links if link]
+        links = list(set(links))
         return links
     
     def __check_new_url(self, session: requests.Session, url: str) -> bool:
