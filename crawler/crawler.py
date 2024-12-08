@@ -105,7 +105,7 @@ class Crawler:
             if not link_exist and self.__check_new_url(session, link):
                 self.__url_to_crawl.put(link)
 
-                self.__log(f'Add "{link}" to queue.')
+                self.__log(f'Add "{link}" to queue, pending urls: {self.__url_to_crawl.qsize()}.')
 
         return True
 
