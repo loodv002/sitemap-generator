@@ -66,24 +66,40 @@ class PageRank:
     
     def pagerank_np(self) -> List[Tuple[str, float]]:
         numNodes = self.__graphmanager.get_url_count()
-        weights = np.array([[1/numNodes] for _ in range(numNodes)], dtype=np.double)
-        residule_factor = np.array([[(1-self.__damping) / numNodes] for _ in range(numNodes)], dtype=np.double)
+        weights = [np.zeros(numNodes, dtype=np.double) + (1 / numNodes), None]
+        residule_factor = (1-self.__damping) / numNodes
 
+        out_degrees = np.array([len(self.__graphmanager.get_links_by_id(i)) for i in range(numNodes)], dtype=np.uint32)
+        no_outgoing_weight_row = np.array([int(out_degree == 0) for out_degree in out_degrees])
+        no_outgoing_weight_array = no_outgoing_weight_row.astype(np.double) / numNodes
+
+        non_zero_out_degrees = out_degrees.copy()
+        non_zero_out_degrees[out_degrees == 0] = 1
+
+        rev_links = [self.__graphmanager.get_rev_links_by_id(i) for i in range(numNodes)]
+
+        rev_weights_sum = np.zeros(numNodes, dtype=np.double)
+        rev_weights = np.zeros(numNodes, dtype=np.double)
+
+        step = 0
         while True:
-            no_outgoing_weight_row = [0 for _ in range(numNodes)]
-            adjacency_matrix = np.zeros((numNodes, numNodes), dtype=np.double)
-            for i in range(numNodes):
-                no_outgoing_weight_row[i] = (len(self.__graphmanager.get_links_by_id(i)) == 0) / numNodes
-                for j in self.__graphmanager.get_rev_links_by_id(i):
-                    adjacency_matrix[i][j] = 1 / len(self.__graphmanager.get_links_by_id(j))
+            curStep = step % 2
+            nextStep = (step + 1) % 2
+
+            rev_weights = weights[curStep] / non_zero_out_degrees
+            for i, rev_link in enumerate(rev_links):
+                rev_weights_sum[i] = sum(rev_weights[j] for j in rev_link)
+
+            weights[nextStep] = self.__damping * (
+                rev_weights_sum + no_outgoing_weight_array @ weights[curStep]
+            ) + residule_factor
             
-            no_outgoing_weight_array = np.array([no_outgoing_weight_row for _ in range(numNodes)])
-            weight_new = self.__damping * np.matmul(np.add(adjacency_matrix, no_outgoing_weight_array), weights) + residule_factor
-            global_diff = np.sum(np.abs(np.subtract(weight_new, weights)))
-            weights = weight_new.copy()
+            global_diff = np.sum(np.abs(np.subtract(weights[nextStep], weights[curStep])))
             if global_diff < self.__covergence:
                 break
-        return [(self.__graphmanager.get_url_by_id(i), weights[i]) for i in range(numNodes)]
+            step += 1
+
+        return [(self.__graphmanager.get_url_by_id(i), weights[curStep][i]) for i in range(numNodes)]
     
     def pagerank_cupy(self) -> List[Tuple[str, float]]:
         numNodes = self.__graphmanager.get_url_count()
