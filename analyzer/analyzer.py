@@ -31,7 +31,7 @@ class Analyzer:
         elif self.__config.algorithm == AnalyzeAlgorithm.PAGERANK_PYMAT:
             url_and_weight = pr.pagerank_pymat()
             weight_max = url_and_weight[0][1]
-            return [(url, weight[0] / weight_max[0]) for url, weight in url_and_weight]
+            return [(url, weight / weight_max) for url, weight in url_and_weight]
         elif self.__config.algorithm == AnalyzeAlgorithm.PAGERANK_NP:
             url_and_weight = pr.pagerank_np()
             weight_max = float(url_and_weight[0][1])
