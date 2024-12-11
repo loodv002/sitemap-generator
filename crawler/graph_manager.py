@@ -137,7 +137,7 @@ class GraphManager:
             n_resources = len(self.__url_to_id)
             n_links = len(self.__all_links)
             max_degree = max(len(link) for link in self.__links_list)
-            avg_degree = sum(len(link) for link in self.__links_list) / n_html_page
+            avg_degree = n_links / n_html_page
         return {
             'n_html_page': n_html_page,
             'n_resources': n_resources,
