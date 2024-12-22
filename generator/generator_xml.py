@@ -1,5 +1,6 @@
 from multiprocessing import Process, Manager
 from itertools import islice
+import time
 
 class SiteMap:
     
