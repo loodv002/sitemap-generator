@@ -43,7 +43,7 @@ gm = GraphManager.load_from_file(f'data/graph/docs.python.org_only313.pkl')
 # az = Analyzer(graph_manager=gm, ...
 ```
 
-`AnalyzerConfig` 之設定請見 [定義檔](analyzer/config.py) 之註解。
+`AnalyzerConfig` 之設定與實驗重現部分請見 [Analyer 說明](analyzer/README.md)。
 
 ### Generator
 Serial 版本範例:
