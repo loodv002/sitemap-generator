@@ -1,3 +1,3 @@
-from .generator_xml import SiteMap
+from .generator_xml import SiteMap, SiteMapParallel
 
-__all__ = ['SiteMap']
+__all__ = ['SiteMap', 'SiteMapParallel']

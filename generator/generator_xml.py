@@ -138,7 +138,6 @@ def cal_parallel_time(urlweight, process_num, serial_time):
 
 if __name__ == "__main__":
     import pickle
-    import time
 
     file_name = "./urlweight_python.pkl"
     # file_name = "./urlweight_info.pkl"
