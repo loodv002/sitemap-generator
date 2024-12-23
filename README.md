@@ -65,3 +65,5 @@ import pickle
 with open('data/generator/urlweight_docs.python.org_only313.pkl', 'rb') as file:
     urlweight = pickle.load(file)
 ```
+
+`Generator` 之實驗重現部分請見 [Generator 說明](generator/README.md)。
