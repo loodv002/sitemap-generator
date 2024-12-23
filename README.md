@@ -25,7 +25,7 @@ cr = Crawler(CrawlerConfig(
 ))
 cr.main()
 ```
-`CrawlerConfig` 具體設定請見 [Crawler設定說明](crawler/README.md)，生成測試資料所用的設定請見 [crawler_test_config.py](crawler_test_config.py)。
+`CrawlerConfig` 具體設定請見 [CrawlerConfig 設定說明](crawler/config_doc.md)，生成測試資料所用的設定請見 [crawler_test_config.py](crawler_test_config.py)，實驗的重現請見 [Crawler 說明](crawler/config_doc.md)。
 
 ### Analyzer
 ```python
