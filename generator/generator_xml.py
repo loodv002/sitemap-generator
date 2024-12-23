@@ -139,18 +139,15 @@ def cal_parallel_time(urlweight, process_num, serial_time):
 if __name__ == "__main__":
     import pickle
 
-    file_name = "./urlweight_python.pkl"
-    # file_name = "./urlweight_info.pkl"
-    # file_name = "./urlweight_nycu.pkl"
-    # file_name = "./urlweight_nycu_ann.pkl"
+    
+    file_name = "../data/generator/urlweight_info.nycu.edu.tw.pkl"
+    # file_name = "../data/generator/urlweight_www.cs.nycu.edu.tw_oth.pkl"
+    # file_name = "../data/generator/urlweight_docs.python.org_only313.pkl"
+    # file_name = "../data/generator/urlweight_www.cs.nycu.edu.tw_ann.pkl"
+    # file_name = "../data/generator/urlweight_random_100000.pkl"
 
     with open(file_name, "rb") as file:
         urlweight = pickle.load(file)
-    
-    # test iteration = 1000000
-    # urlweight = urlweight * 160
-    print("urlweight len:", len(urlweight))
-
 
     serial_time = cal_serial_time(urlweight)
 
