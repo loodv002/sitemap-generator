@@ -8,10 +8,10 @@
 ## 實驗步驟
 
 替換 `generator_xml.py` 使用的 .pkl 檔以測試不同網站的執行結果
-- 校網(資訊公開專區)：`urlweight_info.pkl`
-- 系網(不含公告區)：`urlweight_nycu.pkl`
-- Python 3.13 文件：`urlweight_python.pkl`
-- 系網(公告區)：`urlweight_nycu_ann.pkl`
+- 校網(資訊公開專區)：`urlweight_info.nycu.edu.tw.pkl`
+- 系網(不含公告區)：`urlweight_www.cs.nycu.edu.tw_oth.pkl`
+- Python 3.13 文件：`urlweight_docs.python.org_only313.pkl`
+- 系網(公告區)：`urlweight_www.cs.nycu.edu.tw_ann.pkl`
 - Fake_100000：`urlweight_random_100000.pkl`
 
 ```
