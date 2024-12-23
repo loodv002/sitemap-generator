@@ -24,4 +24,4 @@ sm.main(urlweight)
 
 # Generate sitemap.xml in parallel
 sm = SiteMapParallel()
-sm.main(urlweight)
+sm.main(urlweight, 2)
